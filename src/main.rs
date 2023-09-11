@@ -26,7 +26,7 @@ pub struct Print{
 #[derive(Debug, Deserialize)]
 #[serde(tag = "kind")]
 pub enum Term{
-    Int(i32),
+    Int(Int),
     Str(Str),
     Print(Print),
 }
@@ -40,11 +40,24 @@ pub enum Val{
 }
 
 fn eval(term: Term) -> Val {
-    todo!()
+    match term {
+        Term::Int(number) => Val::Int((number.value)),
+        Term::Str(str) => Val::Str(str.value),
+        Term::Print(print) => {
+            let val = eval(*print.value);
+            match val {
+                Val::Int(n) => print!("{n}"),
+                Val::Bool(b) => print!("{b}"),
+                Val::Str(s) => print!("{s}"),
+                _ => panic!("Valor não suportado")               
+            };
+            Val::Void
+        },
+    }    
 }
 fn main() {
    let program  = fs::read_to_string("./examples/hello.json").unwrap();
    let program = serde_json::from_str::<File>(&program).unwrap();
-
-   println!("{program:?}");
+   let term = program.expression;
+   eval(term);
 }
